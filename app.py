@@ -34,26 +34,20 @@ df_raw['Тип'] = df_raw['Направление'].map(config.DIRECTION_TYPES).
 
 # --- PERIOD SELECTION ---
 today = datetime.now()
-# Поиск индекса текущего периода (месяц и год)
-default_period_idx = len(period_cols) - 1
-found_current = False
+# Поиск индекса текущего периода (ближайшего к сегодня)
+default_period_idx = 0
+min_diff = float('inf')
 
 for i, col in enumerate(period_cols):
     try:
         dt = pd.to_datetime(col, format='%d.%m.%Y')
-        if dt.year == today.year and dt.month == today.month:
+        # Разница в днях между датой из таблицы и сегодняшним днем
+        diff = abs((dt - today).days)
+        if diff < min_diff:
+            min_diff = diff
             default_period_idx = i
-            found_current = True
-            break
-        elif dt > today:
-            default_period_idx = max(0, i-1)
-            found_current = True
-            break
     except:
         continue
-
-if not found_current:
-    default_period_idx = len(period_cols) - 1
 
 # --- SIDEBAR FILTERS ---
 st.sidebar.header("Фильтры")
