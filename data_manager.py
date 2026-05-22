@@ -104,17 +104,22 @@ def get_kpi_metrics(df, period_cols, period_name, metric_name):
     if metric_df.empty:
         return 0, 0, 0
 
-    # Находим два последних ненулевых значения, начиная с выбранного периода и назад
-    vals = []
+    # 1. Находим "текущее" значение (последнее заполненное на момент выбранной даты или ранее)
+    curr_val = 0
     for i in range(idx, -1, -1):
         v = metric_df[period_cols[i]].sum()
         if v != 0:
-            vals.append(v)
-            if len(vals) == 2:
+            curr_val = v
+            break
+            
+    # 2. Находим "предыдущее" значение (последнее заполненное на момент ПРЕДЫДУЩЕЙ даты или ранее)
+    prev_val = 0
+    if idx > 0:
+        for i in range(idx - 1, -1, -1):
+            v = metric_df[period_cols[i]].sum()
+            if v != 0:
+                prev_val = v
                 break
-    
-    curr_val = vals[0] if len(vals) > 0 else 0
-    prev_val = vals[1] if len(vals) > 1 else 0
     
     delta = curr_val - prev_val
     delta_pct = (delta / prev_val * 100) if prev_val != 0 else 0
