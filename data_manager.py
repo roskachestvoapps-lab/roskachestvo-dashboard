@@ -104,22 +104,17 @@ def get_kpi_metrics(df, period_cols, period_name, metric_name):
     if metric_df.empty:
         return 0, 0, 0
 
-    # 1. Находим текущее значение
-    curr_val = metric_df[period_name].sum()
-    
-    # 2. Если текущее значение 0, ищем последнее ненулевое в прошлом
-    actual_idx = idx
-    if curr_val == 0:
-        for i in range(idx - 1, -1, -1):
-            temp_val = metric_df[period_cols[i]].sum()
-            if temp_val != 0:
-                curr_val = temp_val
-                actual_idx = i
+    # Находим два последних ненулевых значения, начиная с выбранного периода и назад
+    vals = []
+    for i in range(idx, -1, -1):
+        v = metric_df[period_cols[i]].sum()
+        if v != 0:
+            vals.append(v)
+            if len(vals) == 2:
                 break
     
-    # 3. Находим предыдущее значение для расчета дельты (относительно того периода, который мы выбрали)
-    prev_period = period_cols[actual_idx - 1] if actual_idx > 0 else None
-    prev_val = metric_df[prev_period].sum() if prev_period else 0
+    curr_val = vals[0] if len(vals) > 0 else 0
+    prev_val = vals[1] if len(vals) > 1 else 0
     
     delta = curr_val - prev_val
     delta_pct = (delta / prev_val * 100) if prev_val != 0 else 0
