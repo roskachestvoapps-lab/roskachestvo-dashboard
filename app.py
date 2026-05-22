@@ -77,7 +77,7 @@ st.sidebar.markdown("---")
 period_range = st.sidebar.select_slider(
     "Диапазон дат",
     options=period_cols,
-    value=(period_cols[max(0, default_period_idx-6)], period_cols[default_period_idx])
+    value=(period_cols[0], period_cols[default_period_idx])
 )
 
 current_period = period_range[1]
