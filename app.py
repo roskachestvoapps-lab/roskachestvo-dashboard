@@ -79,6 +79,21 @@ idx_from = period_cols.index(period_range[0])
 idx_to = period_cols.index(period_range[1])
 selected_periods = period_cols[idx_from:idx_to+1]
 
+# --- DATA PROCESSING FOR CHARTS (CARRY-OVER) ---
+def apply_carry_over(df, cols):
+    df_copy = df.copy()
+    for index, row in df_copy.iterrows():
+        last_val = 0
+        for col in cols:
+            if row[col] == 0:
+                df_copy.at[index, col] = last_val
+            else:
+                last_val = row[col]
+    return df_copy
+
+df_raw_filled = apply_carry_over(df_raw, period_cols)
+df_filtered_filled = apply_carry_over(df_filtered, period_cols)
+
 # --- HEADER & KPI ---
 ui_components.render_header(current_period)
 
@@ -102,7 +117,7 @@ if selected_dir == "Все":
     
     # Row 1: Budget Dynamics (Full Width)
     st.subheader("Динамика бюджета")
-    budget_df = df_raw[df_raw['Метрика'].str.contains("Сумма Бюджет", case=False, na=False)]
+    budget_df = df_raw_filled[df_raw_filled['Метрика'].str.contains("Сумма Бюджет", case=False, na=False)]
     if not budget_df.empty:
         plot_data = budget_df[selected_periods].sum().reset_index()
         plot_data.columns = ['Период', 'Значение']
@@ -116,7 +131,7 @@ if selected_dir == "Все":
     c3, c4 = st.columns([2, 1])
     with c3:
         st.subheader("Динамика внебюджета")
-        extra_df = df_raw[df_raw['Метрика'].str.contains("Сумма Внебюджет", case=False, na=False)]
+        extra_df = df_raw_filled[df_raw_filled['Метрика'].str.contains("Сумма Внебюджет", case=False, na=False)]
         if not extra_df.empty:
             plot_extra = extra_df[selected_periods].sum().reset_index()
             plot_extra.columns = ['Период', 'Значение']
@@ -127,21 +142,22 @@ if selected_dir == "Все":
             
     with c4:
         st.subheader("Доля внебюджета")
-        pie_extra = extra_df.groupby('Направление')[current_period].sum().reset_index()
-        pie_extra = pie_extra[pie_extra[current_period] > 0]
-        if not pie_extra.empty:
-            fig_pie_extra = px.pie(pie_extra, values=current_period, names='Направление', hole=0.5, color_discrete_sequence=px.colors.qualitative.Pastel)
-            fig_pie_extra.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=350, showlegend=False)
-            
-            # Interactive selection
-            selected_points = st.plotly_chart(fig_pie_extra, width="stretch", on_select="rerun", selection_mode="points")
-            
-            if selected_points and selected_points.get("selection", {}).get("points"):
-                point = selected_points["selection"]["points"][0]
-                label = point.get("label")
-                if label:
-                    st.session_state.selected_dir = label
-                    st.rerun()
+        if not extra_df.empty:
+            pie_extra = extra_df.groupby('Направление')[current_period].sum().reset_index()
+            pie_extra = pie_extra[pie_extra[current_period] > 0]
+            if not pie_extra.empty:
+                fig_pie_extra = px.pie(pie_extra, values=current_period, names='Направление', hole=0.5, color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig_pie_extra.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=350, showlegend=False)
+                
+                # Interactive selection
+                selected_points = st.plotly_chart(fig_pie_extra, width="stretch", on_select="rerun", selection_mode="points")
+                
+                if selected_points and selected_points.get("selection", {}).get("points"):
+                    point = selected_points["selection"]["points"][0]
+                    label = point.get("label")
+                    if label:
+                        st.session_state.selected_dir = label
+                        st.rerun()
         else:
             st.info("Нет данных по внебюджету за выбранный период.")
 
@@ -154,8 +170,8 @@ else:
     with c1:
         st.subheader("Исполнение бюджета (План / Факт)")
         # Plan = Сумма Бюджет, Fact = Сумма договоров
-        plan_df = df_filtered[df_filtered['Метрика'].str.contains("Сумма Бюджет", case=False, na=False)]
-        fact_df = df_filtered[df_filtered['Метрика'].str.contains("Сумма договоров", case=False, na=False)]
+        plan_df = df_filtered_filled[df_filtered_filled['Метрика'].str.contains("Сумма Бюджет", case=False, na=False)]
+        fact_df = df_filtered_filled[df_filtered_filled['Метрика'].str.contains("Сумма договоров", case=False, na=False)]
         
         if not plan_df.empty or not fact_df.empty:
             plot_pf = pd.DataFrame(index=selected_periods)
