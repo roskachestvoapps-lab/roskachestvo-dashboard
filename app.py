@@ -104,7 +104,7 @@ if selected_dir == "Все":
         fig = px.area(plot_data, x='Период', y='Значение', markers=True)
         fig.update_traces(line_color=config.ROSKACHESTVO_RED, fillcolor='rgba(227, 6, 19, 0.1)')
         fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # Row 2: Extra-Budget Dynamics & Pie (Interactive)
     st.markdown("---")
@@ -118,7 +118,7 @@ if selected_dir == "Все":
             fig_extra = px.line(plot_extra, x='Период', y='Значение', markers=True)
             fig_extra.update_traces(line_color="#FF8A00", line_width=3)
             fig_extra.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=350)
-            st.plotly_chart(fig_extra, use_container_width=True)
+            st.plotly_chart(fig_extra, width="stretch")
             
     with c4:
         st.subheader("Доля внебюджета")
@@ -129,7 +129,7 @@ if selected_dir == "Все":
             fig_pie_extra.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=350, showlegend=False)
             
             # Interactive selection
-            selected_points = st.plotly_chart(fig_pie_extra, use_container_width=True, on_select="rerun", selection_mode="points")
+            selected_points = st.plotly_chart(fig_pie_extra, width="stretch", on_select="rerun", selection_mode="points")
             
             if selected_points and selected_points.get("selection", {}).get("points"):
                 point = selected_points["selection"]["points"][0]
@@ -161,7 +161,7 @@ else:
             fig_pf.add_trace(go.Bar(x=selected_periods, y=plot_pf['План'], name='План (Бюджет)', marker_color='#D3D3D3'))
             fig_pf.add_trace(go.Bar(x=selected_periods, y=plot_pf['Факт'], name='Факт (Договоры)', marker_color=config.ROSKACHESTVO_RED))
             fig_pf.update_layout(barmode='group', margin=dict(l=0, r=0, t=30, b=0), height=400, legend=dict(orientation="h", y=1.1))
-            st.plotly_chart(fig_pf, use_container_width=True)
+            st.plotly_chart(fig_pf, width="stretch")
             
     with c2:
         st.subheader("Прогноз")
@@ -175,7 +175,7 @@ else:
             fig_f = px.bar(f_df, x="Период", y="Значение")
             fig_f.update_traces(marker_color="orange")
             fig_f.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=400)
-            st.plotly_chart(fig_f, use_container_width=True)
+            st.plotly_chart(fig_f, width="stretch")
 
     # --- DYNAMIC METRIC CHARTS (DIRECTION VIEW) ---
     st.markdown("---")
@@ -205,7 +205,7 @@ else:
                         yaxis_title=None,
                         title_font_size=14
                     )
-                    st.plotly_chart(fig_m, use_container_width=True)
+                    st.plotly_chart(fig_m, width="stretch")
     else:
         st.info("Нет дополнительных метрик для отображения.")
 
@@ -223,7 +223,7 @@ if selected_dir != "Все":
     display_df = display_df.groupby('Метрика').sum().reset_index()
     
     # Format: numbers with separators
-    st.dataframe(display_df.style.format({col: '{:,.0f}' for col in selected_periods}), use_container_width=True)
+    st.dataframe(display_df.style.format({col: '{:,.0f}' for col in selected_periods}), width="stretch")
     
     # Export
     buffer = io.BytesIO()
@@ -251,7 +251,7 @@ else:
     
     st.dataframe(
         full_display_df[display_cols].style.format({col: '{:,.0f}' for col in period_cols}), 
-        use_container_width=True
+        width="stretch"
     )
     
     # Export for the full database

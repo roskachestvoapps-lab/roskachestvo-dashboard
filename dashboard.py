@@ -279,14 +279,14 @@ if selected_dir == "Все":
             fig = px.area(plot_data, x='Период', y='Значение', markers=True)
             fig.update_traces(line_color=ROSKACHESTVO_RED, fillcolor='rgba(227, 6, 19, 0.1)')
             fig.update_layout(xaxis_title=None, yaxis_title="Бюджет", margin=dict(l=0, r=0, t=30, b=0))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
     with c2:
         st.subheader("Доля направлений в бюджете")
         pie_data = budget_df.groupby('Направление')[current_period].sum().reset_index()
         fig_pie = px.pie(pie_data, values=current_period, names='Направление', hole=0.5)
         fig_pie.update_layout(showlegend=False, margin=dict(l=0, r=0, t=30, b=0))
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width="stretch")
 else:
     # DIRECTION DRILL-DOWN MODE
     st.subheader(f"Аналитика по направлению: {selected_dir}")
@@ -303,7 +303,7 @@ else:
             fig_d = px.line(plot_d, x='Период', y='Значение', markers=True)
             fig_d.update_traces(line_color=ROSKACHESTVO_RED)
             fig_d.update_layout(height=300, margin=dict(l=0, r=0, t=20, b=0))
-            st.plotly_chart(fig_d, use_container_width=True)
+            st.plotly_chart(fig_d, width="stretch")
             
     # 2. Conversion/Ratio: Contracts vs Applications
     with c2:
@@ -318,7 +318,7 @@ else:
             
             fig_conv = px.bar(conv_data, x='index', y=["Кол-во заявок", "Кол-во договоров"], barmode='group')
             fig_conv.update_layout(height=300, margin=dict(l=0, r=0, t=20, b=0), legend_title=None)
-            st.plotly_chart(fig_conv, use_container_width=True)
+            st.plotly_chart(fig_conv, width="stretch")
             
     # 3. Sub-direction breakdown
     with c3:
@@ -327,7 +327,7 @@ else:
         fig_sub = px.bar(sub_data, y='Направление 2', x=current_period, orientation='h')
         fig_sub.update_traces(marker_color=ROSKACHESTVO_RED)
         fig_sub.update_layout(height=300, margin=dict(l=0, r=0, t=20, b=0))
-        st.plotly_chart(fig_sub, use_container_width=True)
+        st.plotly_chart(fig_sub, width="stretch")
 
 # --- AGGREGATED TABLE ---
 st.markdown("---")
