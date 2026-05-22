@@ -95,14 +95,31 @@ def load_data():
 
 def get_kpi_metrics(df, period_cols, period_name, metric_name):
     idx = period_cols.index(period_name)
-    prev_period = period_cols[idx-1] if idx > 0 else None
     
+    # Try exact match first, then contains
     metric_df = df[df['Метрика'] == metric_name]
     if metric_df.empty:
         metric_df = df[df['Метрика'].str.contains(metric_name, case=False, na=False)]
     
-    curr_val = metric_df[period_name].sum() if not metric_df.empty else 0
-    prev_val = metric_df[prev_period].sum() if prev_period and not metric_df.empty else 0
+    if metric_df.empty:
+        return 0, 0, 0
+
+    # 1. Находим текущее значение
+    curr_val = metric_df[period_name].sum()
+    
+    # 2. Если текущее значение 0, ищем последнее ненулевое в прошлом
+    actual_idx = idx
+    if curr_val == 0:
+        for i in range(idx - 1, -1, -1):
+            temp_val = metric_df[period_cols[i]].sum()
+            if temp_val != 0:
+                curr_val = temp_val
+                actual_idx = i
+                break
+    
+    # 3. Находим предыдущее значение для расчета дельты (относительно того периода, который мы выбрали)
+    prev_period = period_cols[actual_idx - 1] if actual_idx > 0 else None
+    prev_val = metric_df[prev_period].sum() if prev_period else 0
     
     delta = curr_val - prev_val
     delta_pct = (delta / prev_val * 100) if prev_val != 0 else 0
