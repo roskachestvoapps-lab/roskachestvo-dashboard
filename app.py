@@ -34,18 +34,18 @@ df_raw['Тип'] = df_raw['Направление'].map(config.DIRECTION_TYPES).
 
 # --- PERIOD SELECTION ---
 today = datetime.now()
-# Поиск индекса текущего периода (ближайшего к сегодня)
+# Поиск индекса периода, максимально близкого к сегодня "в меньшую сторону"
 default_period_idx = 0
-min_diff = float('inf')
+closest_past_dt = None
 
 for i, col in enumerate(period_cols):
     try:
         dt = pd.to_datetime(col, format='%d.%m.%Y')
-        # Разница в днях между датой из таблицы и сегодняшним днем
-        diff = abs((dt - today).days)
-        if diff < min_diff:
-            min_diff = diff
-            default_period_idx = i
+        # Ищем дату, которая меньше или равна сегодня, но при этом самая поздняя из таких
+        if dt <= today:
+            if closest_past_dt is None or dt > closest_past_dt:
+                closest_past_dt = dt
+                default_period_idx = i
     except:
         continue
 
